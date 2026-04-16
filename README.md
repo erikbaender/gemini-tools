@@ -1,54 +1,85 @@
-# Gemini Tools (Chrome Extension)
+# Gemini Tools
 
-Keeps Google Gemini on the model you selected manually, and corrects only app-driven switches.
+Gemini Tools gives you more control over how Gemini behaves in your browser.
 
-## Options
+It helps preserve the model you intentionally selected and only intervenes when Gemini appears to switch models on its own. The extension is designed to stay out of your way and respect manual user choices.
 
-Click the extension icon in Chrome toolbar to open the settings popup.
-Changes are saved automatically when toggles are changed.
+## Features
 
-All options are enabled by default:
+- Detects trusted manual model changes and saves your preference locally.
+- Re-applies your saved model when Gemini switches models automatically.
+- Works across page load, route transitions, and rerenders in Gemini's SPA UI.
+- Shows an optional in-page notification when a correction is applied.
+- Optionally hides the Gemini upgrade button.
+- Includes retry and cooldown guardrails to avoid runaway click loops.
 
-- Enable model check and auto-correction.
-- Show notification when app-driven mode drift is corrected.
-- Hide Gemini upgrade button in the top-right.
+## Settings
 
-## What it does
+Click the extension icon in the Chrome toolbar to open the popup.
 
-- Runs on Gemini web hosts matched in `manifest.json`.
-- Detects trusted manual model changes from dropdown clicks.
-- Stores your manual selection as preferred mode in `chrome.storage.local`.
-- On load, route changes, and rerenders, compares current mode to preferred mode.
-- If Gemini changed it by itself, opens model picker and restores your preferred mode.
-- Shows a small notification only when a mode correction was actually applied.
-- Can hide the Gemini upgrade button using resilient selector fallbacks.
-- Re-checks after SPA route changes and DOM rerenders.
-- Includes guardrails to prevent runaway click loops.
+Available toggles:
+- Enable model check and auto-correction
+- Show correction notification
+- Hide upgrade button
 
-## Install (unpacked)
+Settings are saved automatically.
 
-1. Open Chrome and go to `chrome://extensions`.
+## Permissions and Why They Are Needed
+
+- `storage`
+	- Used to persist local preferences (enabled toggles and last manually selected model).
+
+- Gemini host access via content script match patterns in `manifest.json`
+	- Needed to read Gemini's current model state and apply correction only on Gemini pages.
+	- The extension does not run on unrelated websites.
+
+## Privacy
+
+- Data is processed locally in the browser.
+- No analytics, telemetry, or advertising trackers.
+- No sale or transfer of user data to third parties.
+- No remote executable code.
+
+See full policy: [PRIVACY.md](PRIVACY.md)
+
+## Installation
+
+### Chrome Web Store
+
+Install from the Chrome Web Store listing (add URL after publication).
+
+### Unpacked (Development)
+
+1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this folder: `gemini-chrome-extension`.
+4. Select this repository folder.
 
-## Files
+## Release Checklist
 
-- `manifest.json`: Extension metadata and content script registration.
-- `options.html`, `options.js`, `options.css`: Extension toolbar popup settings UI with auto-save toggles.
+1. Update `version` in `manifest.json`.
+2. Verify extension behavior on Gemini (`model correction`, `notification toggle`, `upgrade hide toggle`).
+3. If icon SVG changed, regenerate `icons/icon16.png`, `icons/icon32.png`, `icons/icon48.png`, and `icons/icon128.png`.
+4. Package and publish through your Web Store process (manual or CI).
+
+## Project Structure
+
+- `manifest.json`: Extension metadata, permissions, and content script registration.
+- `options.html`, `options.js`, `options.css`: Toolbar popup settings UI.
 - `src/content-script.js`: Runtime orchestration.
-- `src/lib/selector-strategy.js`: DOM selector fallbacks.
-- `src/lib/model-setter.js`: Model detection and switching.
-- `src/lib/retry-handler.js`: Debounce and retry control.
+- `src/lib/selector-strategy.js`: Selector discovery and fallback strategy.
+- `src/lib/model-setter.js`: Model detection and switching logic.
+- `src/lib/retry-handler.js`: Retry/debounce control.
 - `src/lib/safety-guards.js`: Cooldown and duplicate suppression.
 - `src/lib/notification.js`: In-page correction toast.
-- `src/lib/upgrade-guard.js`: Upgrade button hide style injection.
+- `src/lib/upgrade-guard.js`: Upgrade button hiding.
+- `PRIVACY.md`: Privacy policy used for Web Store disclosures.
 
-## Known limits
+## Known Limitations
 
-- Gemini UI changes can break selectors.
-- If account permissions do not allow a selected mode, extension cannot force it.
-- Localized labels may require regex tuning if attributes are insufficient.
+- Gemini UI changes may require selector updates.
+- If an account lacks access to a model, the extension cannot force selection.
+- Localized UI text may require fallback regex adjustments when stable attributes are unavailable.
 
 ## Debugging
 
