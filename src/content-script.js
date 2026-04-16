@@ -212,6 +212,53 @@
     notification.show("Gemini switched mode by itself. Restored your preferred mode: " + label + ".");
   }
 
+  function isFocusable(el) {
+    if (!(el instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (el.matches("input, textarea, select, button") && !el.hasAttribute("disabled")) {
+      return true;
+    }
+
+    if (el.hasAttribute("contenteditable") && el.getAttribute("contenteditable") !== "false") {
+      return true;
+    }
+
+    return typeof el.focus === "function" && el.tabIndex >= 0;
+  }
+
+  function captureFocusedElement() {
+    const active = document.activeElement;
+    if (!isFocusable(active)) {
+      return null;
+    }
+
+    return active;
+  }
+
+  function restoreFocusedElement(el) {
+    if (el && document.contains(el) && isFocusable(el)) {
+      try {
+        el.focus({ preventScroll: true });
+        return;
+      } catch (err) {
+        log("Focus restore failed on original element", err && err.message ? err.message : err);
+      }
+    }
+
+    const fallback = document.querySelector("textarea, input[type='text'], [contenteditable='true']");
+    if (!fallback || !(fallback instanceof HTMLElement)) {
+      return;
+    }
+
+    try {
+      fallback.focus({ preventScroll: true });
+    } catch (err) {
+      log("Focus restore failed on fallback element", err && err.message ? err.message : err);
+    }
+  }
+
   function maybeCaptureUserSelection() {
     const now = Date.now();
     if (!userSelectionState.pendingMode) {
@@ -319,6 +366,8 @@
           return;
         }
 
+        const focusedBeforeCorrection = captureFocusedElement();
+
         modelSetter.ensureModeSelected(CONFIG, selectorStrategy, targetMode).then(function onEnsure(result) {
           const ts = Date.now();
           if (guards.isDuplicateAction(ts, result.actionKey, CONFIG)) {
@@ -333,6 +382,7 @@
             log("Preferred mode restored", reason, targetMode, result.reason);
             if (result.changed) {
               showCorrectionToast(targetMode);
+              restoreFocusedElement(focusedBeforeCorrection);
             }
             retryController.reset();
             isRunning = false;
