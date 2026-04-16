@@ -24,9 +24,9 @@ Available toggles:
 
 Settings are saved automatically.
 
-## Permissions and Why They Are Needed
+## Permission
 
-- `storage`
+- Storage
 	- Used to persist local preferences (enabled toggles and last manually selected model).
 
 - Gemini host access via content script match patterns in `manifest.json`
@@ -46,7 +46,7 @@ See full policy: [PRIVACY.md](PRIVACY.md)
 
 ### Chrome Web Store
 
-Install from the Chrome Web Store listing (add URL after publication).
+Not published yet.
 
 ### Unpacked (Development)
 
@@ -54,13 +54,6 @@ Install from the Chrome Web Store listing (add URL after publication).
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
 4. Select this repository folder.
-
-## Release Checklist
-
-1. Update `version` in `manifest.json`.
-2. Verify extension behavior on Gemini (`model correction`, `notification toggle`, `upgrade hide toggle`).
-3. If icon SVG changed, regenerate `icons/icon16.png`, `icons/icon32.png`, `icons/icon48.png`, and `icons/icon128.png`.
-4. Package and publish through your Web Store process (manual or CI).
 
 ## Project Structure
 
