@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini Pro Enforcer",
+  "version": "0.1.0",
+  "description": "Keeps Gemini on your manually selected model by correcting app-driven resets.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://gemini.google.com/*",
+        "https://*.gemini.google.com/*"
+      ],
+      "js": [
+        "src/lib/safety-guards.js",
+        "src/lib/retry-handler.js",
+        "src/lib/selector-strategy.js",
+        "src/lib/model-setter.js",
+        "src/content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
