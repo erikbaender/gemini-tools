@@ -37,10 +37,7 @@
     showCorrectionNotificationInput.disabled = !notificationEnabled;
     notificationRow.classList.toggle("setting-row-disabled", !notificationEnabled);
     notificationGroup.classList.toggle("setting-subtree-disabled", !notificationEnabled);
-    notificationGroup.classList.toggle(
-      "setting-subtree-off",
-      notificationEnabled && !showCorrectionNotificationInput.checked
-    );
+    notificationGroup.classList.toggle("setting-subtree-unselected", !showCorrectionNotificationInput.checked);
   }
 
   function persistSettings() {
