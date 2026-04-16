@@ -65,7 +65,7 @@ Install from the Chrome Web Store listing (add URL after publication).
 ## Project Structure
 
 - `manifest.json`: Extension metadata, permissions, and content script registration.
-- `options.html`, `options.js`, `options.css`: Toolbar popup settings UI.
+- `src/popup/options.html`, `src/popup/options.js`, `src/popup/options.css`: Toolbar popup settings UI.
 - `src/content-script.js`: Runtime orchestration.
 - `src/lib/selector-strategy.js`: Selector discovery and fallback strategy.
 - `src/lib/model-setter.js`: Model detection and switching logic.
