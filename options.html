@@ -3,34 +3,41 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gemini Mode Keeper</title>
+    <title>Gemini Tools</title>
     <link rel="stylesheet" href="options.css">
   </head>
   <body>
     <main class="popup-shell">
-      <h1>Gemini Mode Keeper</h1>
-      <p class="subtitle">Settings for model correction in Gemini.</p>
-
       <form id="settings-form" class="settings-list">
-        <label class="setting-row">
-          <input id="enableModelCheck" type="checkbox">
-          <span>Enable model check and auto-correction</span>
-        </label>
+        <section class="setting-card">
+          <label class="setting-row setting-row-parent">
+            <input class="setting-input" id="enableModelCheck" type="checkbox">
+            <span class="setting-copy">
+              <span class="setting-title">Enable mode correction</span>
+              <span class="setting-description">Restore your preferred model when Gemini switches it automatically.</span>
+            </span>
+          </label>
 
-        <label class="setting-row">
-          <input id="showCorrectionNotification" type="checkbox">
-          <span>Show correction notification</span>
-        </label>
+          <div class="setting-subtree" id="notificationGroup">
+            <label class="setting-row setting-row-child" id="notificationRow">
+              <input class="setting-input" id="showCorrectionNotification" type="checkbox">
+              <span class="setting-copy">
+                <span class="setting-title">Show correction notification</span>
+                <span class="setting-description">Display a small toast when mode correction was applied.</span>
+              </span>
+            </label>
+          </div>
+        </section>
 
-        <label class="setting-row">
-          <input id="hideUpgradeButton" type="checkbox">
-          <span>Hide upgrade button</span>
-        </label>
-
-        <div class="actions">
-          <button id="saveButton" type="submit">Save</button>
-          <span id="statusText" aria-live="polite"></span>
-        </div>
+        <section class="setting-card setting-card-single">
+          <label class="setting-row">
+            <input class="setting-input" id="hideUpgradeButton" type="checkbox">
+            <span class="setting-copy">
+              <span class="setting-title">Hide upgrade button</span>
+              <span class="setting-description">Remove Gemini's top-right upgrade action from the interface.</span>
+            </span>
+          </label>
+        </section>
       </form>
     </main>
 

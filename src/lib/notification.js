@@ -23,11 +23,11 @@
     toast.style.maxWidth = "380px";
     toast.style.padding = "10px 12px";
     toast.style.borderRadius = "10px";
-    toast.style.border = "1px solid #e0e0e0";
-    toast.style.background = "#f5f5f5";
-    toast.style.color = "#212121";
+    toast.style.border = "1px solid #3c4043";
+    toast.style.background = "#292a2d";
+    toast.style.color = "#e8eaed";
     toast.style.font = "500 13px/1.35 system-ui, -apple-system, Segoe UI, sans-serif";
-    toast.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.1)";
+    toast.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.35)";
     toast.style.pointerEvents = "none";
     toast.style.opacity = "0";
     toast.style.transform = "translateY(6px)";

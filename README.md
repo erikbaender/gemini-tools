@@ -1,10 +1,11 @@
-# Gemini Mode Keeper (Chrome Extension)
+# Gemini Tools (Chrome Extension)
 
 Keeps Google Gemini on the model you selected manually, and corrects only app-driven switches.
 
 ## Options
 
 Click the extension icon in Chrome toolbar to open the settings popup.
+Changes are saved automatically when toggles are changed.
 
 All options are enabled by default:
 
@@ -34,7 +35,7 @@ All options are enabled by default:
 ## Files
 
 - `manifest.json`: Extension metadata and content script registration.
-- `options.html`, `options.js`, `options.css`: Extension toolbar popup settings UI.
+- `options.html`, `options.js`, `options.css`: Extension toolbar popup settings UI with auto-save toggles.
 - `src/content-script.js`: Runtime orchestration.
 - `src/lib/selector-strategy.js`: DOM selector fallbacks.
 - `src/lib/model-setter.js`: Model detection and switching.

@@ -7,11 +7,11 @@
     hideUpgradeButton: true
   };
 
-  const form = document.getElementById("settings-form");
-  const statusText = document.getElementById("statusText");
   const enableModelCheckInput = document.getElementById("enableModelCheck");
   const showCorrectionNotificationInput = document.getElementById("showCorrectionNotification");
   const hideUpgradeButtonInput = document.getElementById("hideUpgradeButton");
+  const notificationRow = document.getElementById("notificationRow");
+  const notificationGroup = document.getElementById("notificationGroup");
 
   function readBool(value, fallback) {
     return typeof value === "boolean" ? value : fallback;
@@ -28,27 +28,37 @@
       enableModelCheckInput.checked = settings.enableModelCheck;
       showCorrectionNotificationInput.checked = settings.showCorrectionNotification;
       hideUpgradeButtonInput.checked = settings.hideUpgradeButton;
-      statusText.textContent = "";
+      syncDependentOptions();
     });
   }
 
-  function saveSettings(event) {
-    event.preventDefault();
+  function syncDependentOptions() {
+    const notificationEnabled = enableModelCheckInput.checked;
+    showCorrectionNotificationInput.disabled = !notificationEnabled;
+    notificationRow.classList.toggle("setting-row-disabled", !notificationEnabled);
+    notificationGroup.classList.toggle("setting-subtree-disabled", !notificationEnabled);
+  }
 
+  function persistSettings() {
     const settings = {
       enableModelCheck: enableModelCheckInput.checked,
       showCorrectionNotification: showCorrectionNotificationInput.checked,
       hideUpgradeButton: hideUpgradeButtonInput.checked
     };
 
-    chrome.storage.local.set(settings, function onSet() {
-      statusText.textContent = "Saved";
-      window.setTimeout(function clearSavedText() {
-        statusText.textContent = "";
-      }, 1400);
+    chrome.storage.local.set(settings);
+  }
+
+  function installAutoSave() {
+    const inputs = [enableModelCheckInput, showCorrectionNotificationInput, hideUpgradeButtonInput];
+    inputs.forEach(function addChangeHandler(input) {
+      input.addEventListener("change", function onChange() {
+        syncDependentOptions();
+        persistSettings();
+      });
     });
   }
 
-  form.addEventListener("submit", saveSettings);
+  installAutoSave();
   loadSettings();
 })();
