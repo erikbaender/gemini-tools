@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Gemini Tools",
   "version": "0.1.0",
-  "description": "Keeps Gemini on your manually selected model by correcting app-driven resets.",
+  "description": "Allows you to customize the Gemini web app beyond the limited settings exposed to the user.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
