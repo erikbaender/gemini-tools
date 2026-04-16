@@ -22,6 +22,15 @@
     modelControlHints: /(model|gemini|2\.5|flash|pro|fast)/i
   };
 
+  const DEFAULT_SETTINGS = {
+    enableModelCheck: true,
+    showCorrectionNotification: true,
+    hideUpgradeButton: true
+  };
+
+  const SETTINGS_KEYS = Object.keys(DEFAULT_SETTINGS);
+  const PREFERRED_MODE_KEY = "preferredMode";
+
   const log = CONFIG.debug
     ? function debugLog() {
         const args = Array.from(arguments);
@@ -34,17 +43,23 @@
   const retryHandler = global.GPE_RetryHandler;
   const selectorStrategy = global.GPE_SelectorStrategy;
   const modelSetter = global.GPE_ModelSetter;
+  const notification = global.GPE_Notification || { show: function noop() {} };
+  const upgradeGuard = global.GPE_UpgradeGuard || {
+    applyHidden: function noop() {},
+    removeHidden: function noop() {}
+  };
 
   if (!guards || !retryHandler || !selectorStrategy || !modelSetter) {
     return;
   }
 
   const retryController = retryHandler.createRetryController(CONFIG);
-  const STORAGE_KEY = "preferredMode";
 
   let isRunning = false;
   let preferredMode = null;
   let hasLoadedPreference = false;
+  let hasLoadedSettings = false;
+  let settings = Object.assign({}, DEFAULT_SETTINGS);
 
   const userSelectionState = {
     pendingMode: null,
@@ -57,6 +72,10 @@
     }
 
     return null;
+  }
+
+  function readBool(value, fallback) {
+    return typeof value === "boolean" ? value : fallback;
   }
 
   function modeFromText(text) {
@@ -84,13 +103,35 @@
     }
 
     return new Promise(function onLoad(resolve) {
-      storage.get([STORAGE_KEY], function onGet(items) {
+      storage.get([PREFERRED_MODE_KEY], function onGet(items) {
         if (chrome.runtime && chrome.runtime.lastError) {
           resolve(null);
           return;
         }
 
-        resolve(normalizeMode(items[STORAGE_KEY]));
+        resolve(normalizeMode(items[PREFERRED_MODE_KEY]));
+      });
+    });
+  }
+
+  function loadSettings() {
+    const storage = getStorageArea();
+    if (!storage) {
+      return Promise.resolve(Object.assign({}, DEFAULT_SETTINGS));
+    }
+
+    return new Promise(function onLoad(resolve) {
+      storage.get(SETTINGS_KEYS, function onGet(items) {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          resolve(Object.assign({}, DEFAULT_SETTINGS));
+          return;
+        }
+
+        resolve({
+          enableModelCheck: readBool(items.enableModelCheck, DEFAULT_SETTINGS.enableModelCheck),
+          showCorrectionNotification: readBool(items.showCorrectionNotification, DEFAULT_SETTINGS.showCorrectionNotification),
+          hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton)
+        });
       });
     });
   }
@@ -111,7 +152,7 @@
 
     return new Promise(function onSave(resolve) {
       const data = {};
-      data[STORAGE_KEY] = normalized;
+      data[PREFERRED_MODE_KEY] = normalized;
       storage.set(data, function onSet() {
         resolve();
       });
@@ -129,6 +170,17 @@
     });
   }
 
+  function ensureSettingsLoaded() {
+    if (hasLoadedSettings) {
+      return Promise.resolve();
+    }
+
+    return loadSettings().then(function onLoaded(nextSettings) {
+      settings = nextSettings;
+      hasLoadedSettings = true;
+    });
+  }
+
   function syncPreferenceFromCurrentIfMissing() {
     if (preferredMode) {
       return Promise.resolve();
@@ -140,6 +192,24 @@
     }
 
     return Promise.resolve();
+  }
+
+  function applyUpgradeButtonSetting() {
+    if (settings.hideUpgradeButton) {
+      upgradeGuard.applyHidden(selectorStrategy.getUpgradeButtonSelectors());
+      return;
+    }
+
+    upgradeGuard.removeHidden();
+  }
+
+  function showCorrectionToast(targetMode) {
+    if (!settings.showCorrectionNotification) {
+      return;
+    }
+
+    const label = targetMode === "fast" ? "Fast" : "Pro";
+    notification.show("Gemini switched mode by itself. Restored your preferred mode: " + label + ".");
   }
 
   function maybeCaptureUserSelection() {
@@ -203,7 +273,7 @@
 
     isRunning = true;
 
-    ensurePreferenceLoaded()
+    Promise.all([ensurePreferenceLoaded(), ensureSettingsLoaded()])
       .then(function onPreferenceReady() {
         return syncPreferenceFromCurrentIfMissing();
       })
@@ -220,6 +290,12 @@
         const now = Date.now();
         const current = modelSetter.detectModelState(CONFIG, selectorStrategy);
         const targetMode = normalizeMode(preferredMode);
+
+        if (!settings.enableModelCheck) {
+          log("Model check disabled, skipping", reason);
+          isRunning = false;
+          return;
+        }
 
         if (!targetMode) {
           log("Preferred mode unavailable yet, skipping", reason);
@@ -255,6 +331,9 @@
 
           if (result.changed || result.reason === "already-target") {
             log("Preferred mode restored", reason, targetMode, result.reason);
+            if (result.changed) {
+              showCorrectionToast(targetMode);
+            }
             retryController.reset();
             isRunning = false;
             return;
@@ -277,9 +356,15 @@
     runEnforcement("debounced");
   });
 
+  const runMutationDebounced = retryHandler.createDebouncedRunner(CONFIG.debounceMs, function onMutationDebounced() {
+    applyUpgradeButtonSetting();
+    runEnforcement("mutation");
+  });
+
   function handleRouteChange() {
     guards.resetCycle(Date.now());
     retryController.reset();
+    applyUpgradeButtonSetting();
     runDebounced();
   }
 
@@ -304,14 +389,46 @@
 
   function installMutationObserver() {
     const observer = new MutationObserver(function onMutation() {
-      runDebounced();
+      runMutationDebounced();
     });
 
     observer.observe(document.documentElement, {
       childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "aria-selected", "data-testid", "class"]
+      subtree: true
+    });
+  }
+
+  function installStorageSync() {
+    if (!global.chrome || !chrome.storage || !chrome.storage.onChanged) {
+      return;
+    }
+
+    chrome.storage.onChanged.addListener(function onStorageChanged(changes, areaName) {
+      if (areaName !== "local") {
+        return;
+      }
+
+      if (changes[PREFERRED_MODE_KEY]) {
+        preferredMode = normalizeMode(changes[PREFERRED_MODE_KEY].newValue);
+      }
+
+      let hasSettingsChange = false;
+      for (const key of SETTINGS_KEYS) {
+        if (changes[key]) {
+          settings[key] = readBool(changes[key].newValue, DEFAULT_SETTINGS[key]);
+          hasSettingsChange = true;
+        }
+      }
+
+      if (hasSettingsChange) {
+        applyUpgradeButtonSetting();
+        if (!settings.enableModelCheck) {
+          retryController.reset();
+          guards.resetCycle(Date.now());
+        }
+      }
+
+      runDebounced();
     });
   }
 
@@ -321,9 +438,13 @@
 
   function start() {
     guards.resetCycle(Date.now());
+    ensureSettingsLoaded().then(function onSettingsLoaded() {
+      applyUpgradeButtonSetting();
+    });
     installHistoryHooks();
     installMutationObserver();
     installUserSelectionTracking();
+    installStorageSync();
     runEnforcement("startup");
   }
 

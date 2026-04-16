@@ -1,6 +1,17 @@
 (function initSelectorStrategy(global) {
   "use strict";
 
+  const UPGRADE_SELECTORS = [
+    "button[data-test-id='bard-g1-dynamic-upsell-menu-button']",
+    "[data-test-id='bard-g1-dynamic-upsell-menu-button']",
+    "button[aria-label*='upgrade' i]",
+    "button[aria-label*='gemini 2' i]",
+    "div[role='button'][aria-label*='upgrade' i]",
+    "button[class*='dynamic-upsell']",
+    "button[class*='upsell']",
+    "button[class*='upgrade']"
+  ];
+
   function textFrom(el) {
     if (!el) {
       return "";
@@ -89,10 +100,33 @@
     return textFrom(triggerEl);
   }
 
+  function getUpgradeButtonSelectors() {
+    return UPGRADE_SELECTORS.slice();
+  }
+
+  function findUpgradeButton() {
+    for (const selector of UPGRADE_SELECTORS) {
+      const match = document.querySelector(selector);
+      if (match) {
+        return match;
+      }
+    }
+
+    const clickable = queryAll("button,div[role='button']");
+    return (
+      clickable.find(function findByText(el) {
+        const txt = textFrom(el);
+        return /\bupgrade\b|gemini\s*2|pro\+/i.test(txt);
+      }) || null
+    );
+  }
+
   global.GPE_SelectorStrategy = {
     findModelTrigger,
     findModeOption,
     findProOption,
+    findUpgradeButton,
+    getUpgradeButtonSelectors,
     readCurrentModelText,
     textFrom
   };
