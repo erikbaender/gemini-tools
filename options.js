@@ -1,4 +1,4 @@
-(function initOptionsPage() {
+(function initPopupSettings() {
   "use strict";
 
   const DEFAULT_SETTINGS = {

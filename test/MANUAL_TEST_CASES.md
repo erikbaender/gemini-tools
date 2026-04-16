@@ -5,7 +5,7 @@
 1. Load extension unpacked in Chrome.
 2. Open Gemini home page.
 3. Confirm no manifest/runtime errors in Extensions page.
-4. Open extension options and confirm all three toggles are enabled by default.
+4. Open extension popup from toolbar icon and confirm all three toggles are enabled by default.
 
 Expected:
 - Extension installs cleanly.
@@ -38,7 +38,7 @@ Expected:
 
 ## 5) Disable model check
 
-1. Open extension options and disable model check.
+1. Open extension popup and disable model check.
 2. Trigger Gemini model drift or reload into a state where current mode differs from preference.
 
 Expected:
@@ -46,7 +46,7 @@ Expected:
 
 ## 6) Notification toggle behavior
 
-1. Disable correction notification in options.
+1. Disable correction notification in popup.
 2. Re-enable model check if needed and trigger app-driven correction.
 
 Expected:

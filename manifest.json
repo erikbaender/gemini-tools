@@ -3,7 +3,10 @@
   "name": "Gemini Pro Enforcer",
   "version": "0.1.0",
   "description": "Keeps Gemini on your manually selected model by correcting app-driven resets.",
-  "options_page": "options.html",
+  "action": {
+    "default_popup": "options.html",
+    "default_title": "Gemini Mode Keeper"
+  },
   "permissions": [
     "storage"
   ],

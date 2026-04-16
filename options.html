@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gemini Mode Keeper Options</title>
+    <title>Gemini Mode Keeper</title>
     <link rel="stylesheet" href="options.css">
   </head>
   <body>
-    <main class="options-shell">
+    <main class="popup-shell">
       <h1>Gemini Mode Keeper</h1>
-      <p class="subtitle">Control how the extension reacts to model changes in Gemini.</p>
+      <p class="subtitle">Settings for model correction in Gemini.</p>
 
       <form id="settings-form" class="settings-list">
         <label class="setting-row">
@@ -19,12 +19,12 @@
 
         <label class="setting-row">
           <input id="showCorrectionNotification" type="checkbox">
-          <span>Show notification when app-driven mode drift is corrected</span>
+          <span>Show correction notification</span>
         </label>
 
         <label class="setting-row">
           <input id="hideUpgradeButton" type="checkbox">
-          <span>Hide Gemini upgrade button in the top-right</span>
+          <span>Hide upgrade button</span>
         </label>
 
         <div class="actions">

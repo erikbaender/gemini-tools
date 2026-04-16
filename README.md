@@ -4,7 +4,7 @@ Keeps Google Gemini on the model you selected manually, and corrects only app-dr
 
 ## Options
 
-Open extension options from `chrome://extensions` -> Gemini Mode Keeper -> **Extension options**.
+Click the extension icon in Chrome toolbar to open the settings popup.
 
 All options are enabled by default:
 
@@ -34,7 +34,7 @@ All options are enabled by default:
 ## Files
 
 - `manifest.json`: Extension metadata and content script registration.
-- `options.html`, `options.js`, `options.css`: Extension settings page.
+- `options.html`, `options.js`, `options.css`: Extension toolbar popup settings UI.
 - `src/content-script.js`: Runtime orchestration.
 - `src/lib/selector-strategy.js`: DOM selector fallbacks.
 - `src/lib/model-setter.js`: Model detection and switching.
