@@ -5,7 +5,7 @@
 1. Load extension unpacked in Chrome.
 2. Open Gemini home page.
 3. Confirm no manifest/runtime errors in Extensions page.
-4. Open extension popup from toolbar icon and confirm all three toggles are enabled by default.
+4. Open extension popup from toolbar icon and confirm all four toggles are enabled by default.
 
 Expected:
 - Extension installs cleanly.
@@ -69,7 +69,26 @@ Expected:
 Expected:
 - Stored preferred mode remains selected or is quickly reasserted.
 
-## 9) Multi-tab behavior
+## 9) Enter newline behavior
+
+1. Open extension popup and ensure "Enter inserts newline" is enabled.
+2. Click into Gemini message composer and press Enter.
+
+Expected:
+- A new line is inserted.
+- Message is not sent.
+
+3. Press Shift+Enter.
+
+Expected:
+- Message is sent.
+
+4. Disable "Enter inserts newline" and test Enter/Shift+Enter again.
+
+Expected:
+- Gemini default keyboard behavior is restored.
+
+## 10) Multi-tab behavior
 
 1. Open two Gemini tabs.
 1. Switch one tab to Fast manually.
@@ -77,7 +96,7 @@ Expected:
 Expected:
 - Preferred mode updates from manual change and is honored in both tabs.
 
-## 10) Performance and safety
+## 11) Performance and safety
 
 1. Leave Gemini open for several minutes.
 2. Watch DevTools console (with debug enabled) and page responsiveness.

@@ -25,7 +25,8 @@
   const DEFAULT_SETTINGS = {
     enableModelCheck: true,
     showCorrectionNotification: true,
-    hideUpgradeButton: true
+    hideUpgradeButton: true,
+    enableEnterNewline: true
   };
 
   const SETTINGS_KEYS = Object.keys(DEFAULT_SETTINGS);
@@ -130,7 +131,8 @@
         resolve({
           enableModelCheck: readBool(items.enableModelCheck, DEFAULT_SETTINGS.enableModelCheck),
           showCorrectionNotification: readBool(items.showCorrectionNotification, DEFAULT_SETTINGS.showCorrectionNotification),
-          hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton)
+          hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton),
+          enableEnterNewline: readBool(items.enableEnterNewline, DEFAULT_SETTINGS.enableEnterNewline)
         });
       });
     });
@@ -486,6 +488,210 @@
     document.addEventListener("click", onTrustedUserClick, true);
   }
 
+  function isEditableComposerCandidate(el) {
+    if (!(el instanceof HTMLElement)) {
+      return null;
+    }
+
+    const direct = el.closest("[contenteditable]:not([contenteditable='false'])");
+    if (!(direct instanceof HTMLElement) || !direct.isContentEditable) {
+      return null;
+    }
+
+    if (!direct.closest("main,[role='main']")) {
+      return null;
+    }
+
+    const semantics = selectorStrategy.textFrom(direct);
+    const hasTextboxRole = /textbox|prompt|message/i.test(direct.getAttribute("role") || "");
+    const hasMultilineFlag = direct.getAttribute("aria-multiline") === "true";
+    const hasAriaSignals = /type|message|prompt|chat|gemini/i.test(semantics);
+    const hasComposerContainer = Boolean(
+      direct.closest("rich-textarea,[class*='composer'],[class*='prompt'],[class*='input'],[class*='editor']")
+    );
+    const hasNearbySend = Boolean(findSendButton(direct));
+
+    if (!hasTextboxRole && !hasMultilineFlag && !hasAriaSignals && !hasComposerContainer && !hasNearbySend) {
+      return null;
+    }
+
+    return direct;
+  }
+
+  function getDeepActiveElement(root) {
+    let current = root && root.activeElement ? root.activeElement : null;
+    while (current && current.shadowRoot && current.shadowRoot.activeElement) {
+      current = current.shadowRoot.activeElement;
+    }
+
+    return current;
+  }
+
+  function findComposerFromEvent(event) {
+    const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+    for (const node of path) {
+      const candidate = isEditableComposerCandidate(node);
+      if (candidate) {
+        return candidate;
+      }
+    }
+
+    return isEditableComposerCandidate(getDeepActiveElement(document));
+  }
+
+  function isActionButtonDisabled(el) {
+    if (!(el instanceof HTMLElement)) {
+      return true;
+    }
+
+    if (el.matches(":disabled") || el.getAttribute("aria-disabled") === "true") {
+      return true;
+    }
+
+    return false;
+  }
+
+  function isVisibleElement(el) {
+    if (!(el instanceof HTMLElement)) {
+      return false;
+    }
+
+    const style = global.getComputedStyle(el);
+    if (style.display === "none" || style.visibility === "hidden") {
+      return false;
+    }
+
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
+  function findSendButton(composerEl) {
+    const selectors = [
+      "button[aria-label*='send' i]",
+      "button[data-test-id*='send' i]",
+      "button[mattooltip*='send' i]",
+      "div[role='button'][aria-label*='send' i]"
+    ];
+
+    const scopes = [];
+    const composerForm = composerEl.closest("form");
+    if (composerForm) {
+      scopes.push(composerForm);
+    }
+
+    const composerMain = composerEl.closest("main,[role='main']");
+    if (composerMain) {
+      scopes.push(composerMain);
+    }
+
+    scopes.push(document);
+
+    for (const scope of scopes) {
+      for (const selector of selectors) {
+        const buttons = Array.from(scope.querySelectorAll(selector));
+        const target = buttons.find(function findTarget(btn) {
+          return isVisibleElement(btn) && !isActionButtonDisabled(btn);
+        });
+
+        if (target) {
+          return target;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function dispatchSendShortcut(composerEl) {
+    const target = composerEl instanceof HTMLElement ? composerEl : document.activeElement;
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    const eventInit = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: "Enter",
+      code: "Enter",
+      location: 0,
+      ctrlKey: true,
+      shiftKey: false,
+      altKey: false,
+      metaKey: false
+    };
+
+    const keydown = new KeyboardEvent("keydown", eventInit);
+    const keyup = new KeyboardEvent("keyup", eventInit);
+    target.dispatchEvent(keydown);
+    target.dispatchEvent(keyup);
+    return true;
+  }
+
+  function insertComposerLineBreak(composerEl) {
+    try {
+      if (document.activeElement !== composerEl) {
+        composerEl.focus();
+      }
+
+      return document.execCommand("insertLineBreak", false, null);
+    } catch (err) {
+      log("insertLineBreak execCommand failed:", err && err.message ? err.message : err);
+      return false;
+    }
+  }
+
+  function handleComposerKeydown(event) {
+    if (!settings.enableEnterNewline || event.defaultPrevented || event.key !== "Enter") {
+      return;
+    }
+
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const composerEl = findComposerFromEvent(event);
+    if (!composerEl) {
+      return;
+    }
+
+    if (event.shiftKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      if (dispatchSendShortcut(composerEl)) {
+        return;
+      }
+
+      const sendButton = findSendButton(composerEl);
+      if (sendButton) {
+        sendButton.click();
+      }
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+
+    if (insertComposerLineBreak(composerEl)) {
+      return;
+    }
+
+    if (document.execCommand) {
+      document.execCommand("insertLineBreak");
+    }
+  }
+
+  function installComposerKeymap() {
+    document.addEventListener("keydown", handleComposerKeydown, true);
+  }
+
   function start() {
     guards.resetCycle(Date.now());
     ensureSettingsLoaded().then(function onSettingsLoaded() {
@@ -494,6 +700,7 @@
     installHistoryHooks();
     installMutationObserver();
     installUserSelectionTracking();
+    installComposerKeymap();
     installStorageSync();
     runEnforcement("startup");
   }

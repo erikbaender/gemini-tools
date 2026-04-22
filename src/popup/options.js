@@ -4,12 +4,14 @@
   const DEFAULT_SETTINGS = {
     enableModelCheck: true,
     showCorrectionNotification: true,
-    hideUpgradeButton: true
+    hideUpgradeButton: true,
+    enableEnterNewline: true
   };
 
   const enableModelCheckInput = document.getElementById("enableModelCheck");
   const showCorrectionNotificationInput = document.getElementById("showCorrectionNotification");
   const hideUpgradeButtonInput = document.getElementById("hideUpgradeButton");
+  const enableEnterNewlineInput = document.getElementById("enableEnterNewline");
   const notificationRow = document.getElementById("notificationRow");
   const notificationGroup = document.getElementById("notificationGroup");
 
@@ -22,12 +24,14 @@
       const settings = {
         enableModelCheck: readBool(items.enableModelCheck, DEFAULT_SETTINGS.enableModelCheck),
         showCorrectionNotification: readBool(items.showCorrectionNotification, DEFAULT_SETTINGS.showCorrectionNotification),
-        hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton)
+        hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton),
+        enableEnterNewline: readBool(items.enableEnterNewline, DEFAULT_SETTINGS.enableEnterNewline)
       };
 
       enableModelCheckInput.checked = settings.enableModelCheck;
       showCorrectionNotificationInput.checked = settings.showCorrectionNotification;
       hideUpgradeButtonInput.checked = settings.hideUpgradeButton;
+      enableEnterNewlineInput.checked = settings.enableEnterNewline;
       syncDependentOptions();
     });
   }
@@ -44,14 +48,15 @@
     const settings = {
       enableModelCheck: enableModelCheckInput.checked,
       showCorrectionNotification: showCorrectionNotificationInput.checked,
-      hideUpgradeButton: hideUpgradeButtonInput.checked
+      hideUpgradeButton: hideUpgradeButtonInput.checked,
+      enableEnterNewline: enableEnterNewlineInput.checked
     };
 
     chrome.storage.local.set(settings);
   }
 
   function installAutoSave() {
-    const inputs = [enableModelCheckInput, showCorrectionNotificationInput, hideUpgradeButtonInput];
+    const inputs = [enableModelCheckInput, showCorrectionNotificationInput, hideUpgradeButtonInput, enableEnterNewlineInput];
     inputs.forEach(function addChangeHandler(input) {
       input.addEventListener("change", function onChange() {
         syncDependentOptions();
