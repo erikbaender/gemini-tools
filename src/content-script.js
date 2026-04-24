@@ -17,6 +17,7 @@
     duplicateActionWindowMs: 1600,
     maxAttemptsPerCycle: 3,
     retryBackoffMs: [450, 1000, 2200, 4000],
+    newChatFollowUpMs: 2000,
     proRegex: /\bpro\b/i,
     fastRegex: /\bfast\b/i,
     modelControlHints: /(model|gemini|2\.5|flash|pro|fast)/i
@@ -61,6 +62,7 @@
   let hasLoadedPreference = false;
   let hasLoadedSettings = false;
   let settings = Object.assign({}, DEFAULT_SETTINGS);
+  let newChatFollowUpTimer = null;
 
   const userSelectionState = {
     pendingMode: null,
@@ -416,8 +418,20 @@
   function handleRouteChange() {
     guards.resetCycle(Date.now());
     retryController.reset();
+
+    if (newChatFollowUpTimer !== null) {
+      global.clearTimeout(newChatFollowUpTimer);
+      newChatFollowUpTimer = null;
+    }
+
     applyUpgradeButtonSetting();
     runDebounced();
+
+    newChatFollowUpTimer = global.setTimeout(function onNewChatFollowUp() {
+      newChatFollowUpTimer = null;
+      guards.resetCycle(Date.now());
+      runEnforcement("new-chat-followup");
+    }, CONFIG.newChatFollowUpMs);
   }
 
   function installHistoryHooks() {
@@ -446,7 +460,8 @@
 
     observer.observe(document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true
     });
   }
 
