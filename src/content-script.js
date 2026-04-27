@@ -217,6 +217,15 @@
     notification.show("Gemini switched mode by itself. Restored your preferred mode: " + label + ".");
   }
 
+  function showUserSelectionToast(selectedMode) {
+    if (!settings.showCorrectionNotification) {
+      return;
+    }
+
+    const label = selectedMode === "fast" ? "Fast" : "Pro";
+    notification.show("Preferred mode updated to: " + label + ".");
+  }
+
   function isFocusable(el) {
     if (!(el instanceof HTMLElement)) {
       return false;
@@ -283,6 +292,7 @@
     }
 
     return savePreferredMode(selected, "user-selection").then(function onSaved() {
+      showUserSelectionToast(selected);
       retryController.reset();
       guards.resetCycle(Date.now());
       return true;
