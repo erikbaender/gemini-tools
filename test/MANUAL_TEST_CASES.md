@@ -115,3 +115,14 @@ Expected:
 - Extension detects the mode drift within ~2 seconds and restores Pro.
 - If notification toggle is enabled, a toast appears after successful correction.
 - No correction occurs if Gemini stays on Pro after navigation.
+
+## 13) Mode correction after new chat via keyboard shortcut
+
+1. Ensure preferred mode is Pro via manual selection.
+2. Open a new chat using the keyboard shortcut (e.g. Ctrl+Shift+O or the platform equivalent).
+3. Observe whether Gemini switches to Fast mode during new chat initialization.
+
+Expected:
+- Extension detects the mode drift within ~2 seconds and restores Pro, same as when using the New Chat button.
+- If notification toggle is enabled, a toast appears after successful correction.
+- No correction occurs if Gemini stays on Pro after navigation.
