@@ -44,7 +44,8 @@ body {
 }
 
 .setting-card:has(#enableModelCheck:not(:checked)),
-.setting-card:has(#hideUpgradeButton:not(:checked)) {
+.setting-card:has(#hideUpgradeButton:not(:checked)),
+.setting-card:has(#hidePromptSuggestions:not(:checked)) {
   background: var(--unselected-card);
   border-color: var(--unselected-border);
 }

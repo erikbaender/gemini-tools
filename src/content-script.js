@@ -27,6 +27,7 @@
     enableModelCheck: true,
     showCorrectionNotification: true,
     hideUpgradeButton: true,
+    hidePromptSuggestions: false,
     enableEnterNewline: true
   };
 
@@ -47,6 +48,10 @@
   const modelSetter = global.GPE_ModelSetter;
   const notification = global.GPE_Notification || { show: function noop() {} };
   const upgradeGuard = global.GPE_UpgradeGuard || {
+    applyHidden: function noop() {},
+    removeHidden: function noop() {}
+  };
+  const promptSuggestionsGuard = (global.GPE_CreateGuard && global.GPE_CreateGuard("gmk-hide-suggestions-style")) || {
     applyHidden: function noop() {},
     removeHidden: function noop() {}
   };
@@ -135,6 +140,7 @@
           enableModelCheck: readBool(items.enableModelCheck, DEFAULT_SETTINGS.enableModelCheck),
           showCorrectionNotification: readBool(items.showCorrectionNotification, DEFAULT_SETTINGS.showCorrectionNotification),
           hideUpgradeButton: readBool(items.hideUpgradeButton, DEFAULT_SETTINGS.hideUpgradeButton),
+          hidePromptSuggestions: readBool(items.hidePromptSuggestions, DEFAULT_SETTINGS.hidePromptSuggestions),
           enableEnterNewline: readBool(items.enableEnterNewline, DEFAULT_SETTINGS.enableEnterNewline)
         });
       });
@@ -206,6 +212,15 @@
     }
 
     upgradeGuard.removeHidden();
+  }
+
+  function applyPromptSuggestionsSetting() {
+    if (settings.hidePromptSuggestions) {
+      promptSuggestionsGuard.applyHidden(selectorStrategy.getPromptSuggestionsSelectors());
+      return;
+    }
+
+    promptSuggestionsGuard.removeHidden();
   }
 
   function showCorrectionToast(targetMode) {
@@ -413,6 +428,7 @@
 
   const runMutationDebounced = retryHandler.createDebouncedRunner(CONFIG.debounceMs, function onMutationDebounced() {
     applyUpgradeButtonSetting();
+    applyPromptSuggestionsSetting();
     runEnforcement("mutation");
   });
 
@@ -426,6 +442,7 @@
     }
 
     applyUpgradeButtonSetting();
+    applyPromptSuggestionsSetting();
     runDebounced();
 
     newChatFollowUpTimer = global.setTimeout(function onNewChatFollowUp() {
@@ -503,6 +520,7 @@
 
       if (hasSettingsChange) {
         applyUpgradeButtonSetting();
+        applyPromptSuggestionsSetting();
         if (!settings.enableModelCheck) {
           retryController.reset();
           guards.resetCycle(Date.now());
@@ -725,6 +743,7 @@
     guards.resetCycle(Date.now());
     ensureSettingsLoaded().then(function onSettingsLoaded() {
       applyUpgradeButtonSetting();
+      applyPromptSuggestionsSetting();
     });
     installHistoryHooks();
     installMutationObserver();
