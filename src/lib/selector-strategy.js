@@ -2,10 +2,10 @@
   "use strict";
 
   const PROMPT_SUGGESTIONS_SELECTORS = [
-    "prompt-chips",
-    "[data-test-id='prompt-chips']",
-    "scroll-carousel",
-    "[data-test-id='scroll-carousel']"
+    "intent-card-bar",
+    "[data-test-id='intent-card-bar']",
+    "suggestion-chips",
+    "[data-test-id='suggestion-chips']"
   ];
 
   const UPGRADE_SELECTORS = [
