@@ -1,38 +1,38 @@
 (function initUpgradeGuard(global) {
   "use strict";
 
-  const STYLE_ID = "gmk-hide-upgrade-style";
+  function createGuard(styleId) {
+    function applyHidden(selectors) {
+      const selectorList = Array.isArray(selectors) ? selectors.filter(Boolean).join(",") : "";
+      if (!selectorList) {
+        return;
+      }
 
-  function applyHidden(selectors) {
-    const selectorList = Array.isArray(selectors) ? selectors.filter(Boolean).join(",") : "";
-    if (!selectorList) {
-      return;
+      let styleEl = document.getElementById(styleId);
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        document.documentElement.appendChild(styleEl);
+      }
+
+      const css = selectorList + " { display: none !important; }";
+      if (styleEl.textContent === css) {
+        return;
+      }
+
+      styleEl.textContent = css;
     }
 
-    let styleEl = document.getElementById(STYLE_ID);
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = STYLE_ID;
-      document.documentElement.appendChild(styleEl);
+    function removeHidden() {
+      const styleEl = document.getElementById(styleId);
+      if (styleEl && styleEl.parentNode) {
+        styleEl.parentNode.removeChild(styleEl);
+      }
     }
 
-    const css = selectorList + " { display: none !important; }";
-    if (styleEl.textContent === css) {
-      return;
-    }
-
-    styleEl.textContent = css;
+    return { applyHidden, removeHidden };
   }
 
-  function removeHidden() {
-    const styleEl = document.getElementById(STYLE_ID);
-    if (styleEl && styleEl.parentNode) {
-      styleEl.parentNode.removeChild(styleEl);
-    }
-  }
-
-  global.GPE_UpgradeGuard = {
-    applyHidden,
-    removeHidden
-  };
+  global.GPE_CreateGuard = createGuard;
+  global.GPE_UpgradeGuard = createGuard("gmk-hide-upgrade-style");
 })(globalThis);

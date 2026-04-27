@@ -5,7 +5,7 @@
 1. Load extension unpacked in Chrome.
 2. Open Gemini home page.
 3. Confirm no manifest/runtime errors in Extensions page.
-4. Open extension popup from toolbar icon and confirm all four toggles are enabled by default.
+4. Open extension popup from toolbar icon and confirm all five toggles are present and the default values are correct (model check, correction notification, upgrade button hide, and enter newline are enabled; prompt suggestions hide is disabled by default).
 
 Expected:
 - Extension installs cleanly.
@@ -60,6 +60,15 @@ Expected:
 
 Expected:
 - Button is hidden when enabled and visible when disabled.
+
+## 7b) Prompt suggestions hide toggle
+
+1. Open extension popup and enable "Hide prompt suggestions".
+2. Open a new Gemini chat and observe the suggestion cards below the input.
+3. Disable the toggle and verify the suggestion cards reappear without reloading the extension.
+
+Expected:
+- Suggestion cards are hidden when enabled and visible when disabled.
 
 ## 8) SPA rerender stability
 

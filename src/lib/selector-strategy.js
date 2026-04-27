@@ -1,6 +1,13 @@
 (function initSelectorStrategy(global) {
   "use strict";
 
+  const PROMPT_SUGGESTIONS_SELECTORS = [
+    "prompt-chips",
+    "[data-test-id='prompt-chips']",
+    "scroll-carousel",
+    "[data-test-id='scroll-carousel']"
+  ];
+
   const UPGRADE_SELECTORS = [
     "button[data-test-id='bard-g1-dynamic-upsell-menu-button']",
     "[data-test-id='bard-g1-dynamic-upsell-menu-button']",
@@ -104,6 +111,10 @@
     return UPGRADE_SELECTORS.slice();
   }
 
+  function getPromptSuggestionsSelectors() {
+    return PROMPT_SUGGESTIONS_SELECTORS.slice();
+  }
+
   function findUpgradeButton() {
     for (const selector of UPGRADE_SELECTORS) {
       const match = document.querySelector(selector);
@@ -127,6 +138,7 @@
     findProOption,
     findUpgradeButton,
     getUpgradeButtonSelectors,
+    getPromptSuggestionsSelectors,
     readCurrentModelText,
     textFrom
   };
