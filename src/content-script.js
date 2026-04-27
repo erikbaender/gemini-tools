@@ -63,6 +63,7 @@
   let hasLoadedSettings = false;
   let settings = Object.assign({}, DEFAULT_SETTINGS);
   let newChatFollowUpTimer = null;
+  let lastObservedUrl = "";
 
   const userSelectionState = {
     pendingMode: null,
@@ -440,21 +441,34 @@
 
     history.pushState = function patchedPushState() {
       const result = originalPushState.apply(this, arguments);
+      lastObservedUrl = global.location ? global.location.href : "";
       handleRouteChange();
       return result;
     };
 
     history.replaceState = function patchedReplaceState() {
       const result = originalReplaceState.apply(this, arguments);
+      lastObservedUrl = global.location ? global.location.href : "";
       handleRouteChange();
       return result;
     };
 
-    global.addEventListener("popstate", handleRouteChange);
+    global.addEventListener("popstate", function onPopState() {
+      lastObservedUrl = global.location ? global.location.href : "";
+      handleRouteChange();
+    });
   }
 
   function installMutationObserver() {
+    lastObservedUrl = global.location ? global.location.href : "";
+
     const observer = new MutationObserver(function onMutation() {
+      const currentUrl = global.location ? global.location.href : "";
+      if (currentUrl && currentUrl !== lastObservedUrl) {
+        lastObservedUrl = currentUrl;
+        handleRouteChange();
+        return;
+      }
       runMutationDebounced();
     });
 
