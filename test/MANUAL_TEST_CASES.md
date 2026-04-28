@@ -5,32 +5,34 @@
 1. Load extension unpacked in Chrome.
 2. Open Gemini home page.
 3. Confirm no manifest/runtime errors in Extensions page.
-4. Open extension popup from toolbar icon and confirm all four toggles are enabled by default.
+4. Open extension popup from toolbar icon and confirm all four toggles are enabled by default and the mode picker shows Pro selected.
 
 Expected:
 - Extension installs cleanly.
 - Content script runs only on Gemini hosts.
 
-## 2) Manual selection persistence
+## 2) Mode picker — set preferred mode
 
-1. Set model to Pro from the dropdown.
-2. Refresh page.
-
-Expected:
-- Preferred mode remains Pro after reload.
-
-## 3) Manual override updates preference
-
-1. Switch from Pro to Fast manually.
-2. Wait a moment, then navigate to a new Gemini chat.
+1. Open extension popup.
+2. Select "Fast" in the Preferred mode picker.
+3. Reload the Gemini page.
 
 Expected:
-- Fast is treated as preferred mode and is not reverted immediately.
-- If notification toggle is enabled, a toast appears confirming the preferred mode has been updated to Fast.
+- Extension enforces Fast mode on page load.
+- Preferred mode persists across reloads.
+
+## 3) Mode picker — change preferred mode
+
+1. With Fast as the preferred mode, open extension popup and switch to "Pro".
+2. Navigate to a new Gemini chat.
+
+Expected:
+- Pro is immediately treated as the preferred mode.
+- Extension corrects any drift to Pro.
 
 ## 4) App-driven correction
 
-1. Ensure preferred mode is Pro via manual selection.
+1. Ensure preferred mode is Pro via the popup mode picker.
 2. Trigger a Gemini flow where it flips to Fast by itself.
 
 Expected:
@@ -52,7 +54,6 @@ Expected:
 
 Expected:
 - Mode is corrected but no toast is shown.
-- Manually switching modes also produces no toast while the notification toggle is disabled.
 
 ## 7) Upgrade button hide toggle
 
@@ -93,10 +94,10 @@ Expected:
 ## 10) Multi-tab behavior
 
 1. Open two Gemini tabs.
-1. Switch one tab to Fast manually.
+2. Change the preferred mode in the popup.
 
 Expected:
-- Preferred mode updates from manual change and is honored in both tabs.
+- Preferred mode updates from popup change and is honored in both tabs.
 
 ## 11) Performance and safety
 
@@ -109,7 +110,7 @@ Expected:
 
 ## 12) Mode correction after new chat
 
-1. Ensure preferred mode is Pro via manual selection.
+1. Ensure preferred mode is Pro via the popup mode picker.
 2. Open a new chat using the "New Chat" button or similar navigation.
 3. Observe whether Gemini switches to Fast mode during new chat initialization.
 
@@ -120,7 +121,7 @@ Expected:
 
 ## 13) Mode correction after new chat via keyboard shortcut
 
-1. Ensure preferred mode is Pro via manual selection.
+1. Ensure preferred mode is Pro via the popup mode picker.
 2. Open a new chat using the keyboard shortcut (e.g. Ctrl+Shift+O or the platform equivalent).
 3. Observe whether Gemini switches to Fast mode during new chat initialization.
 

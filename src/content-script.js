@@ -11,8 +11,6 @@
     debounceMs: 350,
     verifyDelayMs: 300,
     menuOpenDelayMs: 180,
-    userSelectionSettleMs: 260,
-    userSelectionGraceMs: 1200,
     clickCooldownMs: 900,
     duplicateActionWindowMs: 1600,
     maxAttemptsPerCycle: 3,
@@ -20,7 +18,8 @@
     newChatFollowUpMs: 2000,
     proRegex: /\bpro\b/i,
     fastRegex: /\bfast\b/i,
-    modelControlHints: /(model|gemini|2\.5|flash|pro|fast)/i
+    thinkingRegex: /\bthink/i,
+    modelControlHints: /(model|gemini|2\.5|flash|pro|fast|think)/i
   };
 
   const DEFAULT_SETTINGS = {
@@ -65,13 +64,8 @@
   let newChatFollowUpTimer = null;
   let lastObservedUrl = "";
 
-  const userSelectionState = {
-    pendingMode: null,
-    lastUserActionTs: 0
-  };
-
   function normalizeMode(mode) {
-    if (mode === "pro" || mode === "fast") {
+    if (mode === "pro" || mode === "fast" || mode === "thinking") {
       return mode;
     }
 
@@ -80,16 +74,6 @@
 
   function readBool(value, fallback) {
     return typeof value === "boolean" ? value : fallback;
-  }
-
-  function modeFromText(text) {
-    if (CONFIG.proRegex.test(text) && !CONFIG.fastRegex.test(text)) {
-      return "pro";
-    }
-    if (CONFIG.fastRegex.test(text)) {
-      return "fast";
-    }
-    return null;
   }
 
   function getStorageArea() {
@@ -192,7 +176,7 @@
     }
 
     const current = modelSetter.detectModelState(CONFIG, selectorStrategy);
-    if (current.state === "pro" || current.state === "fast") {
+    if (current.state === "pro" || current.state === "fast" || current.state === "thinking") {
       return savePreferredMode(current.state, "initial-detect");
     }
 
@@ -213,17 +197,8 @@
       return;
     }
 
-    const label = targetMode === "fast" ? "Fast" : "Pro";
+    const label = targetMode === "fast" ? "Fast" : targetMode === "thinking" ? "Thinking" : "Pro";
     notification.show("Gemini switched mode by itself. Restored your preferred mode: " + label + ".");
-  }
-
-  function showUserSelectionToast(selectedMode) {
-    if (!settings.showCorrectionNotification) {
-      return;
-    }
-
-    const label = selectedMode === "fast" ? "Fast" : "Pro";
-    notification.show("Preferred mode updated to: " + label + ".");
   }
 
   function isFocusable(el) {
@@ -273,61 +248,6 @@
     }
   }
 
-  function maybeCaptureUserSelection() {
-    const now = Date.now();
-    if (!userSelectionState.pendingMode) {
-      return Promise.resolve(false);
-    }
-    if (now - userSelectionState.lastUserActionTs > CONFIG.userSelectionGraceMs) {
-      userSelectionState.pendingMode = null;
-      return Promise.resolve(false);
-    }
-
-    const current = modelSetter.detectModelState(CONFIG, selectorStrategy);
-    const selected = userSelectionState.pendingMode || normalizeMode(current.state);
-    userSelectionState.pendingMode = null;
-
-    if (!selected) {
-      return Promise.resolve(false);
-    }
-
-    return savePreferredMode(selected, "user-selection").then(function onSaved() {
-      showUserSelectionToast(selected);
-      retryController.reset();
-      guards.resetCycle(Date.now());
-      return true;
-    });
-  }
-
-  function onTrustedUserClick(event) {
-    if (!event.isTrusted) {
-      return;
-    }
-
-    const target = event.target;
-    if (!(target instanceof Element)) {
-      return;
-    }
-
-    const option = target.closest("[role='option'],[role='menuitem'],button,div[role='button']");
-    if (!option) {
-      return;
-    }
-
-    const text = selectorStrategy.textFrom(option);
-    const mode = modeFromText(text);
-    if (!mode) {
-      return;
-    }
-
-    userSelectionState.pendingMode = mode;
-    userSelectionState.lastUserActionTs = Date.now();
-
-    global.setTimeout(function onSelectionSettled() {
-      maybeCaptureUserSelection();
-    }, CONFIG.userSelectionSettleMs);
-  }
-
   function runEnforcement(reason) {
     if (isRunning) {
       return;
@@ -340,15 +260,6 @@
         return syncPreferenceFromCurrentIfMissing();
       })
       .then(function onPreferenceInitialized() {
-        return maybeCaptureUserSelection();
-      })
-      .then(function onUserSelectionHandled(userSelectionCaptured) {
-        if (userSelectionCaptured) {
-          log("User selection captured, skipping enforcement", reason);
-          isRunning = false;
-          return;
-        }
-
         const now = Date.now();
         const current = modelSetter.detectModelState(CONFIG, selectorStrategy);
         const targetMode = normalizeMode(preferredMode);
@@ -521,10 +432,6 @@
 
       runDebounced();
     });
-  }
-
-  function installUserSelectionTracking() {
-    document.addEventListener("click", onTrustedUserClick, true);
   }
 
   function isEditableComposerCandidate(el) {
@@ -738,7 +645,6 @@
     });
     installHistoryHooks();
     installMutationObserver();
-    installUserSelectionTracking();
     installComposerKeymap();
     installStorageSync();
     runEnforcement("startup");

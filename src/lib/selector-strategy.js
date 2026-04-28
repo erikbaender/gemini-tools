@@ -72,8 +72,14 @@
   }
 
   function findModeOption(config, targetMode) {
-    const wanted = targetMode === "fast" ? config.fastRegex : config.proRegex;
-    const blocked = targetMode === "fast" ? config.proRegex : config.fastRegex;
+    const wanted =
+      targetMode === "fast" ? config.fastRegex :
+      targetMode === "thinking" ? config.thinkingRegex :
+      config.proRegex;
+    const blocked =
+      targetMode === "fast" ? config.proRegex :
+      targetMode === "thinking" ? config.proRegex :
+      config.fastRegex;
     const root = findOpenPopupRoot();
     const optionCandidates = queryAll("[role='option'],[role='menuitem'],button,div[role='button']", root);
 

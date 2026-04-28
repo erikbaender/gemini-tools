@@ -26,6 +26,14 @@
 
     const text = selectorStrategy.readCurrentModelText(trigger);
 
+    if (config.thinkingRegex.test(text)) {
+      return {
+        state: "thinking",
+        trigger,
+        text
+      };
+    }
+
     if (config.proRegex.test(text) && !config.fastRegex.test(text)) {
       return {
         state: "pro",
@@ -50,7 +58,7 @@
   }
 
   function ensureModeSelected(config, selectorStrategy, targetMode) {
-    if (targetMode !== "pro" && targetMode !== "fast") {
+    if (targetMode !== "pro" && targetMode !== "fast" && targetMode !== "thinking") {
       return Promise.resolve({
         changed: false,
         reason: "invalid-target",

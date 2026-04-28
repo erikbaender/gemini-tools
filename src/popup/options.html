@@ -9,6 +9,36 @@
   <body>
     <main class="popup-shell">
       <form id="settings-form" class="settings-list">
+        <section class="setting-card setting-card-single">
+          <div class="mode-picker-header">
+            <span class="setting-title">Preferred mode</span>
+            <span class="setting-description">The extension will restore this mode if Gemini switches away from it.</span>
+          </div>
+          <div class="mode-picker-options" role="group" aria-label="Preferred mode">
+            <label class="mode-option" id="modeFastLabel">
+              <input class="mode-input" type="radio" name="preferredMode" id="modeFast" value="fast">
+              <span class="mode-option-copy">
+                <span class="mode-option-title">Fast</span>
+                <span class="mode-option-description">Gemini 2.5 Flash — quick responses.</span>
+              </span>
+            </label>
+            <label class="mode-option" id="modeThinkingLabel">
+              <input class="mode-input" type="radio" name="preferredMode" id="modeThinking" value="thinking">
+              <span class="mode-option-copy">
+                <span class="mode-option-title">Thinking</span>
+                <span class="mode-option-description">Gemini 2.5 Flash Thinking — extended reasoning.</span>
+              </span>
+            </label>
+            <label class="mode-option mode-option-last" id="modeProLabel">
+              <input class="mode-input" type="radio" name="preferredMode" id="modePro" value="pro">
+              <span class="mode-option-copy">
+                <span class="mode-option-title">Pro</span>
+                <span class="mode-option-description">Gemini 2.5 Pro — most capable model.</span>
+              </span>
+            </label>
+          </div>
+        </section>
+
         <section class="setting-card">
           <label class="setting-row setting-row-parent">
             <input class="setting-input" id="enableModelCheck" type="checkbox">

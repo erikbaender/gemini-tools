@@ -143,3 +143,64 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
+
+/* Mode picker */
+
+.mode-picker-header {
+  display: grid;
+  gap: 2px;
+  padding: 11px 12px 8px;
+}
+
+.mode-picker-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.mode-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--unselected-card);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  text-align: center;
+}
+
+.mode-option:hover {
+  background: var(--card-hover);
+  border-color: var(--accent);
+}
+
+.mode-option-selected {
+  background: var(--child-card);
+  border-color: var(--accent);
+}
+
+.mode-input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.mode-option-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.mode-option-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mode-option-description {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.3;
+}
