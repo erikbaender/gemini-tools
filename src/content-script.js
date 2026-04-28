@@ -284,7 +284,7 @@
     }
 
     const current = modelSetter.detectModelState(CONFIG, selectorStrategy);
-    const selected = normalizeMode(current.state) || userSelectionState.pendingMode;
+    const selected = userSelectionState.pendingMode || normalizeMode(current.state);
     userSelectionState.pendingMode = null;
 
     if (!selected) {
