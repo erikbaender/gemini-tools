@@ -26,6 +26,7 @@ Expected:
 
 Expected:
 - Fast is treated as preferred mode and is not reverted immediately.
+- If notification toggle is enabled, a toast appears confirming the preferred mode has been updated to Fast.
 
 ## 4) App-driven correction
 
@@ -51,6 +52,7 @@ Expected:
 
 Expected:
 - Mode is corrected but no toast is shown.
+- Manually switching modes also produces no toast while the notification toggle is disabled.
 
 ## 7) Upgrade button hide toggle
 
