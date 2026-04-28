@@ -412,6 +412,8 @@
 
       if (changes[PREFERRED_MODE_KEY]) {
         preferredMode = normalizeMode(changes[PREFERRED_MODE_KEY].newValue);
+        retryController.reset();
+        guards.resetCycle(Date.now());
       }
 
       let hasSettingsChange = false;
